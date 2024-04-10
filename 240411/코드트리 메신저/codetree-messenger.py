@@ -116,11 +116,12 @@ def update_alert_num(cmd):
     elif cmd[0] == '300':
         new_auth = int(cmd[2])
         node = nodes[int(cmd[1])]
-        if node.auth < new_auth:  # 커진 경우
-            update_route_alert(node, new_auth-1, new_auth-node.auth - 2, -1, 1)
-        elif node.auth > new_auth:
-            update_route_alert(node, new_auth-1, new_auth-node.auth - 2, -1, -1)
-        change_auth(node, new_auth)
+        if node.alert == 1:
+            if node.auth < new_auth:  # 권한 증가
+                update_route_alert(node, new_auth-1, new_auth-node.auth - 2, -1, 1)
+            elif node.auth > new_auth:  # 권한 감소
+                update_route_alert(node, new_auth-1, new_auth-node.auth - 2, -1, -1)
+            change_auth(node, new_auth)
 
     # 3. 부모 채팅방 교환
     # 해당 노드들 경로 계산
