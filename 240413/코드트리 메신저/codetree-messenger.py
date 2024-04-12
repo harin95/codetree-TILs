@@ -12,9 +12,9 @@ def update_alert_num(node, p):
     global alert_num
     route = find_route(node)
     for i in route:
+        alert_num[i] += p
         if not alert_tf[i]:
             break
-        alert_num[i] += p
 
 
 # 초기화
@@ -126,6 +126,8 @@ def command(cmd):
                     idx = route.index(node.num)+1
                     for i in route[idx:]:
                         alert_num[i] -= 1
+                        if not alert_tf[i]:
+                            break
                 except ValueError or IndexError:
                     continue
 
@@ -140,6 +142,8 @@ def command(cmd):
                     idx = route.index(node.num)+1
                     for i in route[idx:]:
                         alert_num[i] += 1
+                        if not alert_tf[i]:
+                            break
                 except ValueError or IndexError:
                     continue
 
