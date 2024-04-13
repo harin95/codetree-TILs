@@ -23,15 +23,21 @@ def move_knight(num, d):
     # 명령받은 기사 추가
     q.append(knights[num])
 
-    # 이동 후 이동한 위치에 겹치는 기사가 있는지 확인 (큐로 연쇄반응)
+    # 이동 후 이동한 위치에 겹치는 기사가 있는지 확인 (큐로 연쇄 반응)
     while q:
         cur = q.popleft()
-        nr = cur.r + dr[d]
+        nr = cur.r + dr[d]      # 이동
         nc = cur.c + dc[d]
 
-        # 범위 밖으로 이동한 경우 = 벽
-        if not isIn(nr, nc):
+        # 범위 밖으로 이동한 경우
+        if not isIn(nr, nc) or not isIn(nr + cur.h - 1, nc + cur.w - 1):
             return []
+
+        # 벽이 포함된 경우
+        for row in range(nr, nr + cur.h):
+            for col in range(nc, nc + cur.w):
+                if chess[row][col] == 2:
+                    return []
 
         after_move.append(Knight(cur.num, nr, nc, cur.h, cur.w, cur.k))
 
@@ -40,22 +46,15 @@ def move_knight(num, d):
 
         # cur 기사 이동한 위치 표시
         for row in range(nr, nr + cur.h):
-            # 이동한 위치에 벽이 있으면 전체 다 이동 못함
-            if not isIn(row, nc) or chess[row][nc] == 2:
-                return []
             row_cmp[row] += 1
         for col in range(nc, nc + cur.w):
-            # 이동한 위치에 벽이 있으면 전체 다 이동 못함
-            if not isIn(nr, col) or chess[nr][col] == 2:
-                return []
             col_cmp[col] += 1
 
+        # 기존 기사들과 위치 비교
         for knight in knights:
-            if not inChess[knight.num]:     # 체스판에서 사라진 경우 제외
+            if not inChess[knight.num] or knight.num == cur.num:     # 체스판에서 사라진 경우 or 자기자신은 제외
                 continue
 
-            if knight.num == cur.num:
-                continue
             # 비교 기사 범위 표시
             row_cnt, col_cnt = 0, 0
             for row in range(knight.r, knight.r + knight.h):
@@ -76,7 +75,6 @@ def move_knight(num, d):
                 row_cmp[row] -= 1
             for col in range(knight.c, knight.c + knight.w):
                 col_cmp[col] -= 1
-
 
     return after_move
 
@@ -99,15 +97,14 @@ for i in range(N):
 damage = [0] * N
 inChess = [True] * N
 
-for idx in range(1, Q+1):
+for idx in range(Q):
     num, d = map(int, input().split())
-    num -= 1
 
     # 체스 밖의 기사는 명령 받지 않음
-    if not inChess[num]:
+    if not inChess[num-1]:
         continue
 
-    after_move = move_knight(num, d)
+    after_move = move_knight(num-1, d)
     if not after_move:  # 끝에 벽이 있는 경우 - 모든 기사가 움직이지 못함
         continue
 
@@ -116,7 +113,7 @@ for idx in range(1, Q+1):
         knights[knight.num].r = knight.r
         knights[knight.num].c = knight.c
 
-        if knight.num == num:   # 명령 받은 기사는 피해 입지 않음
+        if knight.num == num-1:   # 명령 받은 기사는 피해 입지 않음
             continue
 
         dmg_cnt = 0
@@ -126,8 +123,7 @@ for idx in range(1, Q+1):
                     dmg_cnt += 1
 
         # 피해 업데이트
-        # damage[knight.num] += dmg_cnt
-        damage[knight.num] += knights[knight.num].k if knights[knight.num].k - dmg_cnt < 0 else dmg_cnt
+        damage[knight.num] += dmg_cnt
 
         # 체력 업데이트
         knights[knight.num].k -= dmg_cnt
