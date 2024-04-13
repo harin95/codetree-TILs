@@ -9,9 +9,6 @@ class Knight:
         self.w = w
         self.k = k
 
-    def __repr__(self):
-        return f"[Knight{self.num+1}], r={self.r}, c={self.c}, k={self.k}\n"
-
 
 def isIn(r, c):
     if 0 <= r < L and 0 <= c < L:
@@ -23,17 +20,17 @@ def move_knight(num, d):
     after_move = []
     q = deque()
 
-    # 첫번째 기사 추가
+    # 명령받은 기사 추가
     q.append(knights[num])
 
-    # 이동 후 이동한 위치에 겹치는 기사가 있는지 확인 (연쇄반응)
+    # 이동 후 이동한 위치에 겹치는 기사가 있는지 확인 (큐로 연쇄반응)
     while q:
         cur = q.popleft()
         nr = cur.r + dr[d]
         nc = cur.c + dc[d]
 
         # 범위 밖으로 이동한 경우 = 벽
-        if not isIn(r, c):
+        if not isIn(nr, nc):
             return []
 
         after_move.append(Knight(cur.num, nr, nc, cur.h, cur.w, cur.k))
@@ -44,17 +41,17 @@ def move_knight(num, d):
         # cur 기사 이동한 위치 표시
         for row in range(nr, nr + cur.h):
             # 이동한 위치에 벽이 있으면 전체 다 이동 못함
-            if chess[row][nc] == 2:
+            if not isIn(row, nc) or chess[row][nc] == 2:
                 return []
             row_cmp[row] += 1
         for col in range(nc, nc + cur.w):
             # 이동한 위치에 벽이 있으면 전체 다 이동 못함
-            if chess[nr][col] == 2:
+            if not isIn(nr, col) or chess[nr][col] == 2:
                 return []
             col_cmp[col] += 1
 
         for knight in knights:
-            if not inChess[knight.num]:     # 체스판에서 사라진 경우
+            if not inChess[knight.num]:     # 체스판에서 사라진 경우 제외
                 continue
 
             if knight.num == cur.num:
@@ -102,7 +99,7 @@ for i in range(N):
 damage = [0] * N
 inChess = [True] * N
 
-for _ in range(Q):
+for idx in range(1, Q+1):
     num, d = map(int, input().split())
     num -= 1
 
@@ -111,7 +108,7 @@ for _ in range(Q):
         continue
 
     after_move = move_knight(num, d)
-    if not after_move:
+    if not after_move:  # 끝에 벽이 있는 경우 - 모든 기사가 움직이지 못함
         continue
 
     for knight in after_move:
@@ -119,9 +116,9 @@ for _ in range(Q):
         knights[knight.num].r = knight.r
         knights[knight.num].c = knight.c
 
-        if knight.num == num:
+        if knight.num == num:   # 명령 받은 기사는 피해 입지 않음
             continue
-        # 명령받은 기사를 제외한 나머지 기사는 영역에 있는 함정 수 만큼 데미지 입는다
+
         dmg_cnt = 0
         for r in range(knight.r, knight.r + knight.h):
             for c in range(knight.c, knight.c + knight.w):
@@ -129,7 +126,8 @@ for _ in range(Q):
                     dmg_cnt += 1
 
         # 피해 업데이트
-        damage[knight.num] += dmg_cnt
+        # damage[knight.num] += dmg_cnt
+        damage[knight.num] += knights[knight.num].k if knights[knight.num].k - dmg_cnt < 0 else dmg_cnt
 
         # 체력 업데이트
         knights[knight.num].k -= dmg_cnt
