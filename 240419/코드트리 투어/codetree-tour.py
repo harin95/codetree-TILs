@@ -90,6 +90,8 @@ for _ in range(Q-1):
             if not id_tf[res.id]:
                 while products and not id_tf[res.id]:
                     res = heapq.heappop(products)
+                    if id_tf[res.id]:
+                        heapq.heappush(products, res)
             if not products:
                 print(-1)
 
