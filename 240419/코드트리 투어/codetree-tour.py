@@ -1,4 +1,5 @@
 import heapq
+from heapq import heapify
 from collections import defaultdict
 
 
@@ -15,9 +16,6 @@ class Product:
             return True
         elif self.rev - Product.distance[self.dest] == other.rev - Product.distance[other.dest]:  # id 오름차순
             return self.id < other.id
-
-    def __repr__(self):
-        return f"id={self.id}, rev={self.rev}, dest={self.dest}, profit={self.rev-Product.distance[self.dest]}"
 
 
 # 최소 거리 구하기
@@ -84,6 +82,8 @@ for _ in range(Q-1):
         if not products:
             print(-1)
         else:
+            res = heapq.heappop(products)
+            heapq.heappush(products, res)
             res = products[0]
 
             # 삭제된 경우
@@ -110,6 +110,4 @@ for _ in range(Q-1):
     elif cmd[0] == '500':
         start = int(cmd[1])
         Product.distance = run_dijkstra(start)
-        if products:
-            res = heapq.heappop(products)
-            heapq.heappush(products, res)
+        heapify(products)
